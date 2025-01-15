@@ -1,6 +1,11 @@
 package com.example.url_shortener.service
 
+import com.example.url_shortener.service.util.BaseConverter.convertToBase62
+import com.example.url_shortener.service.util.UniqueIdGenerator.generateId
 import com.example.url_shortener.utils.RedisUtil
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.springframework.stereotype.Service
 
 @Service
@@ -12,14 +17,15 @@ class UrlShortenerService {
         if (existedUrl != null){
             return existedUrl
         }
-        // 없는 경우
-        // 1. 유일 ID 생성
 
-        // 2. 단축 URL 생성
+        val id = generateId()
+        val shortUrl = convertToBase62(id)
+        CoroutineScope(Dispatchers.IO).launch{
+            RedisUtil.setValue(url, shortUrl)
+            RedisUtil.setValue(shortUrl, url)
+        }
 
-        // 3. URL Redis 에 저장한 후 반환
-
-        return ""
+        return shortUrl
     }
     
     fun redirectUrl(
