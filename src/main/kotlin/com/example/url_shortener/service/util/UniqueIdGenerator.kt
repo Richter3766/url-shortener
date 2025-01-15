@@ -2,8 +2,13 @@ package com.example.url_shortener.service.util
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 class SnowflakeGenerator(private val dataCenterId: Long, private val serverId: Long) {
+    private val specificDateTime = LocalDateTime.of(2025, 1, 1, 0, 0, 0)
+    private val epochTime = specificDateTime.toInstant(ZoneOffset.UTC).toEpochMilli()
+
     private var lastTimestamp: Long = -1
     private var sequence: Long = 0
     private val mutex = Mutex()
@@ -25,9 +30,8 @@ class SnowflakeGenerator(private val dataCenterId: Long, private val serverId: L
             }
 
             lastTimestamp = timestamp
-
             var id = 0L
-            id = id or (timestamp shl 22)
+            id = id or ((timestamp - epochTime) shl 22)
             id = id or (dataCenterId shl 17)
             id = id or (serverId shl 12)
             id = id or sequence
